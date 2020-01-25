@@ -1,0 +1,19 @@
+{:mvn/repos {"datomic-cloud" {:url "s3://datomic-releases-1fc2183a/maven/releases"}}
+
+ :deps {org.clojure/clojure          {:mvn/version "1.10.0"}
+        org.clojure/spec.alpha       {:mvn/version "0.2.176"}}
+
+ :paths ["src"]
+
+ :aliases {:dev {:extra-paths ["dev"]
+                 :extra-deps  {org.clojure/tools.nrepl {:mvn/version "0.2.12"}}}
+
+           :cider {:extra-deps {cider/cider-nrepl {:mvn/version "0.21.1"}}
+                   :main-opts  ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}
+
+           :test {:extra-paths ["test" "test-resources"]
+                  :extra-deps  {com.datomic/client-cloud  {:mvn/version "0.8.81"}
+                                com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner"
+                                                           :sha     "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
+                  :main-opts   ["-m" "cognitect.test-runner"
+                                "-d" "test"]}}}
