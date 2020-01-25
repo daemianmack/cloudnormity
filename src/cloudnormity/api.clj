@@ -4,13 +4,13 @@
             [cloudnormity.protocols :as p]))
 
 
-(def default-tracking-attr :cloudnormity/conformed)
+(def ^:dynamic *tracking-attr* :cloudnormity/conformed)
 
 
 (defn ensure-cloudnormity-schema
-  [conn tracking-attr]
-  (when-not (p/has-attr? (p/db conn) tracking-attr)
-    (let [tx-data [{:db/ident tracking-attr
+  [conn]
+  (when-not (p/has-attr? (p/db conn) *tracking-attr*)
+    (let [tx-data [{:db/ident *tracking-attr*
                     :db/valueType :db.type/keyword
                     :db/cardinality :db.cardinality/one
                     :db/doc "Conformed norm name"}]]
@@ -39,33 +39,29 @@
     tx-fn       (eval-tx-fn conn norm-map)))
 
 (defn transact-norm
-  [conn tracking-attr norm-map]
-  (let [tx-data (into [{tracking-attr (:name norm-map)}]
+  [conn norm-map]
+  (let [tx-data (into [{*tracking-attr* (:name norm-map)}]
                       (tx-data-for-norm conn norm-map))]
     (p/transact conn tx-data)))
 
 (defn conforms-to?
-  ([conn norm-map]
-   (conforms-to? conn default-tracking-attr norm-map))
-  ([conn tracking-attr norm-map]
-   (and (p/has-norm? (p/db conn) tracking-attr norm-map)
-        (:once norm-map))))
+  [conn norm-map]
+  (and (p/has-norm? (p/db conn) *tracking-attr* norm-map)
+       (:once norm-map)))
 
 (defn ensure-norms
-  [conn tracking-attr norm-maps]
+  [conn norm-maps]
   ;; TODO Something more useful here than `nil` return,
   ;; report of succeeded/failed norms?
   (doseq [norm-map norm-maps]
     (when-not (conforms-to? conn norm-map)
-      (transact-norm conn tracking-attr norm-map))))
+      (transact-norm conn norm-map))))
 
 (defn ensure-conforms
   ([conn norm-maps]
    (ensure-conforms conn norm-maps (map :name norm-maps)))
   ([conn norm-maps norm-names]
-   (ensure-conforms conn default-tracking-attr norm-maps norm-names))
-  ([conn tracking-attr norm-maps norm-names]
-   (ensure-cloudnormity-schema conn tracking-attr)
+   (ensure-cloudnormity-schema conn)
    (let [ensurable-norms (filter (comp (set norm-names) :name)
                                  norm-maps)]
-     (ensure-norms conn tracking-attr ensurable-norms))))
+     (ensure-norms conn ensurable-norms))))
