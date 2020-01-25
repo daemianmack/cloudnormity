@@ -44,17 +44,17 @@
                       (tx-data-for-norm conn norm-map))]
     (p/transact conn tx-data)))
 
-(defn conforms-to?
+(defn needed?
   [conn norm-map]
-  (and (p/has-norm? (p/db conn) *tracking-attr* norm-map)
-       (:once norm-map)))
+  (or (:mutable norm-map)
+      (not (p/has-norm? (p/db conn) *tracking-attr* norm-map))))
 
 (defn ensure-norms
   [conn norm-maps]
   ;; TODO Something more useful here than `nil` return,
   ;; report of succeeded/failed norms?
   (doseq [norm-map norm-maps]
-    (when-not (conforms-to? conn norm-map)
+    (when (needed? conn norm-map)
       (transact-norm conn norm-map))))
 
 (defn ensure-conforms
