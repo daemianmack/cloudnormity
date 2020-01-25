@@ -1,42 +1,20 @@
 (ns cloudnormity.api
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [datomic.client.api :as d]))
+            [cloudnormity.protocols :as p]))
 
 
 (def default-tracking-attr :cloudnormity/conformed)
 
 
-(defn tx!
-  [conn tx-data]
-  (d/transact conn {:tx-data tx-data}))
-
-(defn has-attribute?
-  "Returns true if a database has an attribute named attr-name"
-  [conn attr-name]
-  (-> (d/db conn)
-      (d/pull '[:db/id] [:db/ident attr-name])
-      :db/id
-      boolean))
-
 (defn ensure-cloudnormity-schema
   [conn tracking-attr]
-  (when-not (has-attribute? conn tracking-attr)
+  (when-not (p/has-attr? (p/db conn) tracking-attr)
     (let [tx-data [{:db/ident tracking-attr
                     :db/valueType :db.type/keyword
                     :db/cardinality :db.cardinality/one
                     :db/doc "Conformed norm name"}]]
-      (tx! conn tx-data))))
-
-(defn has-norm?
-  "Returns true if a database has an attribute named attr-name"
-  [conn tracking-attr norm-map]
-  (seq (d/q '[:find ?e
-              :in $ ?tracking-attr ?norm-name
-              :where [?e ?tracking-attr ?norm-name]]
-            (d/db conn)
-            tracking-attr
-            (:name norm-map))))
+      (p/transact conn tx-data))))
 
 (defn read-resource
   "Reads and returns data from a resource containing edn text."
@@ -63,13 +41,13 @@
 (defn transact-norm
   [conn norm-map]
   (let [tx-data (tx-data-for conn norm-map)]
-   (tx! conn tx-data)))
+   (p/transact conn tx-data)))
 
 (defn conforms-to?
   ([conn norm-map]
    (conforms-to? conn default-tracking-attr norm-map))
   ([conn tracking-attr norm-map]
-   (and (has-norm? conn tracking-attr norm-map)
+   (and (p/has-norm? (p/db conn) tracking-attr norm-map)
         (:once norm-map))))
 
 (defn ensure-norms
