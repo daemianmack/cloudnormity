@@ -51,11 +51,20 @@
 
 (defn ensure-norms
   [conn norm-maps]
-  ;; TODO Something more useful here than `nil` return,
-  ;; report of succeeded/failed norms?
-  (doseq [norm-map norm-maps]
-    (when (needed? conn norm-map)
-      (transact-norm conn norm-map))))
+  (reduce
+   (fn [acc {name :name :as norm-map}]
+     (if (not (needed? conn norm-map))
+       acc
+       (try
+         (transact-norm conn norm-map)
+         (conj acc name)
+         (catch Exception e
+           (throw (ex-info "Norm failed to conform"
+                           {:succeeded-norms acc
+                            :failed-norm name
+                            :exception e}))))))
+   []
+   norm-maps))
 
 (defn ensure-conforms
   ([conn norm-maps]
