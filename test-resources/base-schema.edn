@@ -1,0 +1,21 @@
+[
+
+ ;; Provide support for deprecating schema.
+ {:db/ident       :schema/deprecated
+  :db/valueType   :db.type/boolean
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident       :schema/see-instead
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one}
+
+ ;; Domain stuff.
+ {:db/ident :user/id
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ {:db/ident :user/tel
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one}
+
+ ]

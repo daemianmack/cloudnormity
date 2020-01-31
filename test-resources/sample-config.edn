@@ -1,0 +1,35 @@
+[
+
+ {:name        :base-schema
+  :tx-resource "base-schema.edn"}
+
+
+ ;; Typically you'd likely accrete this onto the base-schema and mark
+ ;; that `:mutable` but for purposes of exercising config options...
+ {:name    :add-user-zip
+  :tx-data [{:db/ident       :user/zip
+             :db/valueType   :db.type/long
+             :db/cardinality :db.cardinality/one}]}
+
+
+ ;; Our first user, Jeff. His `zip` value will become a problem.
+ {:name    :add-user-data
+  :tx-data [{:user/id "jeff" :user/tel "123-456-7890" :user/zip 12345}]}
+
+
+ ;; Whoops, zipcodes shouldn't be merely numeric. We can model those
+ ;; values better.
+ {:name    :add-user-zipcode
+  :tx-data [{:db/ident       :user/zip-code
+             :db/valueType   :db.type/string
+             :db/cardinality :db.cardinality/one}]}
+
+
+ ;; Which means we'll have to migrate data. We'll mark it `:mutable`
+ ;; so that this migration runs on every invocation until we're
+ ;; positive there are no pending writes to the old attribute.
+ {:name  :fix-user-zip
+  :tx-fn sample-tx-fns.fix-user-zip/migrate
+  :mutable true}
+
+ ]
