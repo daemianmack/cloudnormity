@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.set :as set]
             [cloudnormity.api :as sut]
+            [cloudnormity.impl :as impl]
             [cloudnormity.test-utils :as tu]
             [datomic.client.api :as d]))
 
@@ -9,7 +10,7 @@
 (use-fixtures :each tu/test-system-fixture)
 
 
-(def config (sut/read-resource "sample-config.edn"))
+(def config (impl/read-resource "sample-config.edn"))
 
 
 (def all-idents-q
@@ -43,7 +44,7 @@
 
 (defn norm-idents
   [conn norm-maps]
-  (let [tx-data (mapcat (partial sut/tx-data-for-norm conn)
+  (let [tx-data (mapcat (partial impl/tx-data-for-norm conn)
                         norm-maps)]
     (conj (keep :db/ident tx-data)
           sut/*tracking-attr*)))
