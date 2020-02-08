@@ -13,6 +13,7 @@
 
            :test {:extra-paths ["test" "test-resources"]
                   :extra-deps  {com.datomic/client-cloud  {:mvn/version "0.8.81"}
+                                com.datomic/dev-local-bundle {:mvn/version "0.9.10"}
                                 com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner"
                                                            :sha     "3cb0a9daf1cb746259dc8309b218f9211ad3b33b"}}
                   :main-opts   ["-m" "cognitect.test-runner"
