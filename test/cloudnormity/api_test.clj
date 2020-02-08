@@ -1,5 +1,5 @@
 (ns cloudnormity.api-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is use-fixtures]]
             [clojure.set :as set]
             [cloudnormity.api :as sut]
             [cloudnormity.impl :as impl]
