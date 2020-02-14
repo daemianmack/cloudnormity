@@ -17,8 +17,8 @@
          (catch Exception e
            (throw (ex-info "Norm failed to conform"
                            {:succeeded-norms acc
-                            :failed-norm name
-                            :exception e}))))))
+                            :failed-norm name}
+                           e))))))
    []
    norm-maps))
 
