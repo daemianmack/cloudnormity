@@ -21,3 +21,7 @@ work with Datomic Cloud, with some small deviations.
 
 - Cloudnormity allows reference to resource files for schema; your
   schema doesn't have to live within cloudnormity's confines.
+
+- Cloudnormity allows extension of the mechanism used to resolve
+  config references into transaction data; your schema can reside in
+  an S3 bucket, encrypted, written in a custom schema DSL.

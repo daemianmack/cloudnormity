@@ -1,8 +1,12 @@
 (ns cloudnormity.api-test
-  (:require [clojure.test :refer [deftest is use-fixtures]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is use-fixtures]]
             [clojure.set :as set]
+            [clojure.string :as str]
             [cloudnormity.api :as sut]
-            [cloudnormity.impl :as impl]
+            [cloudnormity.tx-sources :as tx-sources]
+            [cloudnormity.specs :as s]
+            [cloudnormity.util :as u]
             [cloudnormity.test-utils :as tu]
             [datomic.client.api :as d]))
 
@@ -10,7 +14,7 @@
 (use-fixtures :each tu/test-system-fixture)
 
 
-(def config (impl/read-resource "sample-config.edn"))
+(def config (u/read-resource "sample-config.edn"))
 
 
 (def all-idents-q
@@ -44,7 +48,8 @@
 
 (defn norm-idents
   [conn norm-maps]
-  (let [tx-data (mapcat (partial impl/tx-data-for-norm conn)
+  (let [norm-maps (s/conform! norm-maps)
+        tx-data (mapcat (partial tx-sources/tx-data-for-norm conn)
                         norm-maps)]
     (conj (keep :db/ident tx-data)
           sut/*tracking-attr*)))
@@ -92,3 +97,25 @@
       (sut/ensure-conforms tu/*conn* config)
       (is (= (sort expected-norm-names)
              (sort (conformed-norm-names tu/*conn*)))))))
+
+
+(deftest ensure-conforms-respects-custom-tx-sources
+  (let [idents-before (all-idents tu/*conn*)
+        expected-new-idents [sut/*tracking-attr* :banans]
+        schema [{:db/ident :banans
+                 :db/valueType :db.type/string
+                 :db/cardinality :db.cardinality/one}]
+        encode (comp str/reverse pr-str)
+        decode (comp edn/read-string str/reverse)]
+    (defmethod tx-sources/tx-data-for-norm :tx-banans
+      [conn {[_ payload] :tx-source}]
+      (decode payload))
+    (sut/ensure-conforms tu/*conn*
+                         [{:name :banans :tx-banans (encode schema)}]
+                         [:banans])
+    (remove-method tx-sources/tx-data-for-norm :tx-banans)
+    (is (= (set expected-new-idents)
+           (set/difference (set (all-idents tu/*conn*))
+                           (set idents-before))))
+    (is (= [:banans]
+           (conformed-norm-names tu/*conn*)))))
