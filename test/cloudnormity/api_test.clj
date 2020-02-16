@@ -54,16 +54,23 @@
     (conj (keep :db/ident tx-data)
           sut/*tracking-attr*)))
 
+(defn new-idents=
+  [conn pre-existing-idents expected-new-idents]
+  (= (set expected-new-idents)
+     (set/difference (set (all-idents conn))
+                     (set pre-existing-idents))))
+
+(defn conformed=
+  [conn expected-norm-names]
+  (= (sort expected-norm-names)
+     (sort (conformed-norm-names conn))))
+
 (deftest ensure-conforms-basic
-  (let [expected-norm-names (set (map :name config))
-        idents-before (all-idents tu/*conn*)
+  (let [idents-before (all-idents tu/*conn*)
         expected-new-idents (norm-idents tu/*conn* static-norm-maps)]
     (sut/ensure-conforms tu/*conn* config)
-    (is (= (sort expected-norm-names)
-           (sort (conformed-norm-names tu/*conn*))))
-    (is (= (set expected-new-idents)
-           (set/difference (set (all-idents tu/*conn*))
-                           (set idents-before))))))
+    (is (conformed= tu/*conn* (map :name config)))
+    (is (new-idents= tu/*conn* idents-before expected-new-idents))))
 
 (deftest ensure-conforms-idempotency
   (let [tx-count #(count (d/tx-range tu/*conn* {:start 0 :end 1e6}))
@@ -84,24 +91,17 @@
         expected-new-idents (norm-idents tu/*conn*
                                          (sut/norm-maps-by-name config [:base-schema]))]
     (sut/ensure-conforms tu/*conn* config [:base-schema])
-    (is (= [:base-schema]
-           (conformed-norm-names tu/*conn*)))
-    (is (= (set expected-new-idents)
-           (set/difference (set (all-idents tu/*conn*))
-                           (set idents-before))))))
+    (is (conformed= tu/*conn* [:base-schema]))
+    (is (new-idents= tu/*conn* idents-before expected-new-idents))))
 
 (deftest ensure-conforms-custom-tracking-attr
-  (let [custom-attr :custom/tracking-attr
-        expected-norm-names (set (map :name config))]
+  (let [custom-attr :custom/tracking-attr]
     (binding [sut/*tracking-attr* custom-attr]
       (sut/ensure-conforms tu/*conn* config)
-      (is (= (sort expected-norm-names)
-             (sort (conformed-norm-names tu/*conn*)))))))
-
+      (is (conformed= tu/*conn* (map :name config))))))
 
 (deftest ensure-conforms-respects-custom-tx-sources
   (let [idents-before (all-idents tu/*conn*)
-        expected-new-idents [sut/*tracking-attr* :banans]
         schema [{:db/ident :banans
                  :db/valueType :db.type/string
                  :db/cardinality :db.cardinality/one}]
@@ -114,8 +114,5 @@
                          [{:name :banans :tx-banans (encode schema)}]
                          [:banans])
     (remove-method tx-sources/tx-data-for-norm :tx-banans)
-    (is (= (set expected-new-idents)
-           (set/difference (set (all-idents tu/*conn*))
-                           (set idents-before))))
-    (is (= [:banans]
-           (conformed-norm-names tu/*conn*)))))
+    (is (new-idents= tu/*conn* idents-before [sut/*tracking-attr* :banans]))
+    (is (conformed= tu/*conn* [:banans]))))
