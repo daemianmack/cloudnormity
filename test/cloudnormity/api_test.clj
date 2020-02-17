@@ -84,7 +84,10 @@
       (is (= (+ t1-tx-count conformed-tx-count)
              t2-tx-count))
       (sut/ensure-conforms tu/*conn* config)
-      (is (= t2-tx-count (tx-count))))))
+      (let [mutable-norm-count 1]
+        (is (= (+ t2-tx-count
+                  mutable-norm-count)
+               (tx-count)))))))
 
 (deftest ensure-conforms-specified-subset-of-norms
   (let [idents-before (all-idents tu/*conn*)

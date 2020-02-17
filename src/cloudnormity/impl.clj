@@ -40,14 +40,11 @@
       (tx! conn tx-data))))
 
 (defn transact-norm
-  "If the norm yields `tx-data`, transact it. Likeliest cause of a norm
-  yielding no `tx-data`: a tx-fn that produces nothing, as in the case
-  of a data-fix migration that has no useful work to perform."
+  "Record having evaluated this norm and include any corresponding
+  transaction data."
   [conn norm-map tracking-attr]
-  (let [tx-data (tx-sources/tx-data-for-norm conn norm-map)]
-    (when (seq tx-data)
-      (tx! conn (into [{tracking-attr (:name norm-map)}]
-                      tx-data)))))
+  (tx! conn (into [{tracking-attr (:name norm-map)}]
+                  (tx-sources/tx-data-for-norm conn norm-map))))
 
 (defn needed?
   [conn norm-map tracking-attr]
