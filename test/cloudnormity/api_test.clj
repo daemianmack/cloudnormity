@@ -121,8 +121,15 @@
     (is (conformed= tu/*conn* [:banans]))))
 
 (deftest ensure-conforms-validates-norm-maps
-  (let [config (assoc-in config [2 :tx-data 0] "this is not a norm map")]
-    (is (thrown-with-anom?
+  (let [config (assoc-in config [2 :tx-data] ["this is not a norm map"])]
+    (is (thrown-with-data?
          {:cognitect.anomalies/category :cognitect.anomalies/incorrect
           :cognitect.anomalies/message "Norm config failed to validate."}
+         (sut/ensure-conforms tu/*conn* config)))))
+
+(deftest ensure-conforms-conveys-failed-norms
+  (let [config (assoc-in config [2 :tx-data] [{:unknown/attribute :unknown/attribute-also}])]
+    (is (thrown-with-data?
+         {:succeeded-norms [:base-schema :add-user-zip]
+          :failed-norm :add-user-data}
          (sut/ensure-conforms tu/*conn* config)))))

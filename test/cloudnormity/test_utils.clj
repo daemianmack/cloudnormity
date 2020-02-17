@@ -44,34 +44,20 @@
   {:pre [(map? m) (map? sub)]}
   (.containsAll (.entrySet ^java.util.Map m) (.entrySet ^java.util.Map sub)))
 
-(defmethod t/assert-expr 'thrown-with-anom? [msg form]
-  ;; (is (thrown-with-anom? {:k1 v1 :k2 v2} expr))
+(defmethod t/assert-expr 'thrown-with-data? [msg form]
+  ;; (is (thrown-with-data? {:k1 v1 :k2 v2} expr))
   ;; Asserts that evaluating `expr` throws an exception the `ex-data` of
-  ;; which matches (via `submap` semantics) the provided `form`.
-  (let [anom-map (second form)
+  ;; which matches (via `submap` semantics) the map of expectations.
+  (let [expect-map (second form)
         body (nthnext form 2)]
     `(try ~@body
           (t/do-report {:type :fail, :message ~msg, :expected '~form, :actual nil})
           (catch clojure.lang.ExceptionInfo e#
             (let [m# (ex-data e#)]
-              (if (submap? m# ~anom-map)
+              (if (submap? m# ~expect-map)
                 (t/do-report {:type :pass, :message ~msg,
                               :expected '~form, :actual m#})
                 (t/do-report {:type :fail, :message ~msg,
                               :expected '~form, :actual m#})))
             e#))))
-(comment
 
- (dl/add-system "my-amazing-system" nil)
-
- (def client (d/client {:system "my-amazing-system"}))
-
- (d/create-database client {:db-name "DB"})
-
- (def conn (d/connect client {:db-name "DB"}))
-
- (d/transact conn {:tx-data (-> "tiny-schema.edn"
-                                clojure.java.io/resource
-                                slurp
-                                clojure.edn/read-string)})
-  )
