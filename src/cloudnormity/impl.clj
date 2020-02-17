@@ -1,6 +1,9 @@
 (ns cloudnormity.impl
   (:require [cloudnormity.tx-sources :as tx-sources]
-            [datomic.client.api :as d]))
+            [clojure.spec.alpha :as s]
+            [datomic.client.api :as d]
+            [cloudnormity.specs :as specs]
+            [cloudnormity.util :as u]))
 
 
 (defn tx!
@@ -50,3 +53,11 @@
   [conn norm-map tracking-attr]
   (or (:mutable norm-map)
       (not (has-norm? conn tracking-attr norm-map))))
+
+(defn conform!
+  [norm-maps]
+  (if-not (s/valid? ::specs/norm-maps norm-maps)
+    (u/anomaly! :incorrect
+                "Norm config failed to validate."
+                {:problems (s/explain ::specs/norm-maps norm-maps)})
+    (s/conform ::specs/norm-maps norm-maps)))

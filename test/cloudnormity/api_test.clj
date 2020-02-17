@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [cloudnormity.api :as sut]
             [cloudnormity.tx-sources :as tx-sources]
-            [cloudnormity.specs :as s]
+            [cloudnormity.impl :as impl]
             [cloudnormity.util :as u]
             [cloudnormity.test-utils :as tu]
             [datomic.client.api :as d]))
@@ -48,7 +48,7 @@
 
 (defn norm-idents
   [conn norm-maps]
-  (let [norm-maps (s/conform! norm-maps)
+  (let [norm-maps (impl/conform! norm-maps)
         tx-data (mapcat (partial tx-sources/tx-data-for-norm conn)
                         norm-maps)]
     (conj (keep :db/ident tx-data)

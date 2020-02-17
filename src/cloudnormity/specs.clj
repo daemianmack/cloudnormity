@@ -1,7 +1,6 @@
 (ns cloudnormity.specs
   (:require [clojure.spec.alpha :as s]
-            [cloudnormity.tx-sources :as tx-sources]
-            [cloudnormity.util :as u]))
+            [cloudnormity.tx-sources :as tx-sources]))
 
 
 (s/def ::tx-data (s/coll-of map?))
@@ -21,11 +20,3 @@
 
 (s/def ::norm-maps
   (s/coll-of ::norm-map))
-
-(defn conform!
-  [norm-maps]
-  (if-not (s/valid? ::norm-maps norm-maps)
-    (u/anomaly! :incorrect
-                "Norm config failed to validate."
-                {:problems (s/explain ::norm-maps norm-maps)})
-    (s/conform ::norm-maps norm-maps)))

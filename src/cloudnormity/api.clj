@@ -1,6 +1,5 @@
 (ns cloudnormity.api
-  (:require [cloudnormity.impl :as impl]
-            [cloudnormity.specs :as specs]))
+  (:require [cloudnormity.impl :as impl]))
 
 
 (def ^:dynamic *tracking-attr* :cloudnormity/conformed)
@@ -34,6 +33,6 @@
   ([conn norm-maps norm-names]
    (let [ensurable-norms (-> norm-maps
                              (norm-maps-by-name norm-names)
-                             specs/conform!)]
+                             impl/conform!)]
     (impl/ensure-cloudnormity-schema conn *tracking-attr*)
     (ensure-norms conn ensurable-norms))))
