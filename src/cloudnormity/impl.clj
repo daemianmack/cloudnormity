@@ -56,5 +56,5 @@
   (if-not (s/valid? ::specs/norm-maps norm-maps)
     (u/anomaly! :incorrect
                 "Norm config failed to validate."
-                {:problems (s/explain ::specs/norm-maps norm-maps)})
+                {:problems (s/explain-str ::specs/norm-maps norm-maps)})
     (s/conform ::specs/norm-maps norm-maps)))

@@ -1,5 +1,6 @@
 (ns cloudnormity.test-utils
-  (:require [datomic.client.api :as d]
+  (:require [clojure.test :as t]
+            [datomic.client.api :as d]
             [datomic.dev-local :as dl])
   (:import [java.util UUID]))
 
@@ -37,6 +38,28 @@
         (println "Destroying test DB:" db-name)
         (dl/release-db system-name db-name)))))
 
+(defn submap?
+  "Checks whether `m` contains all entries in `sub`."
+  [m sub]
+  {:pre [(map? m) (map? sub)]}
+  (.containsAll (.entrySet ^java.util.Map m) (.entrySet ^java.util.Map sub)))
+
+(defmethod t/assert-expr 'thrown-with-anom? [msg form]
+  ;; (is (thrown-with-anom? {:k1 v1 :k2 v2} expr))
+  ;; Asserts that evaluating `expr` throws an exception the `ex-data` of
+  ;; which matches (via `submap` semantics) the provided `form`.
+  (let [anom-map (second form)
+        body (nthnext form 2)]
+    `(try ~@body
+          (t/do-report {:type :fail, :message ~msg, :expected '~form, :actual nil})
+          (catch clojure.lang.ExceptionInfo e#
+            (let [m# (ex-data e#)]
+              (if (submap? m# ~anom-map)
+                (t/do-report {:type :pass, :message ~msg,
+                              :expected '~form, :actual m#})
+                (t/do-report {:type :fail, :message ~msg,
+                              :expected '~form, :actual m#})))
+            e#))))
 (comment
 
  (dl/add-system "my-amazing-system" nil)

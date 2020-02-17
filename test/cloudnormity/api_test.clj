@@ -119,3 +119,10 @@
     (remove-method tx-sources/tx-data-for-norm :tx-banans)
     (is (new-idents= tu/*conn* idents-before [sut/*tracking-attr* :banans]))
     (is (conformed= tu/*conn* [:banans]))))
+
+(deftest ensure-conforms-validates-norm-maps
+  (let [config (assoc-in config [2 :tx-data 0] "this is not a norm map")]
+    (is (thrown-with-anom?
+         {:cognitect.anomalies/category :cognitect.anomalies/incorrect
+          :cognitect.anomalies/message "Norm config failed to validate."}
+         (sut/ensure-conforms tu/*conn* config)))))
