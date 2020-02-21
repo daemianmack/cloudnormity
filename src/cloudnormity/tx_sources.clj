@@ -31,7 +31,7 @@
 (defn reorg-tx-sources
   "If a key in the `norm-map` has a method implementation in
   `tx-data-for-norm`, relocate it underneath a `:tx-source` key with a
-  vector conveying its type and value.
+  vector conveying its dispatch type and value.
 
   This allows the user's config to reference novel tx sources while
   keeping config syntax as simple and terse as possible (i.e., user
