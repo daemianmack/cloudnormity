@@ -3,6 +3,10 @@
 A re-do of [conformity](https://github.com/avescodes/conformity) to
 work with Datomic Cloud, with some small deviations.
 
+### Example
+
+A sample config lives under `test-resources`.
+
 ### Deviations from Conformity
 
 ##### Immutable norm default
@@ -50,3 +54,10 @@ work with Datomic Cloud, with some small deviations.
   facility involves arbitrary user code, anything could happen. The
   fix here seems to be providing a transaction function along with
   documentation around how to install/deploy.
+  
+##### Support migrating from existing solutions
+  Folks may be already using migration solutions. Support integrating
+  with these somehow.
+  - Could insert synthetic tracking entities fast-forwarding past them.
+  - Simpler might be to support an `:ignore` keyword or similar on
+    previously-transacted norms.
