@@ -61,3 +61,10 @@ A sample config lives under `test-resources`.
   - Could insert synthetic tracking entities fast-forwarding past them.
   - Simpler might be to support an `:ignore` keyword or similar on
     previously-transacted norms.
+
+### Tests
+
+Tests can be run via `clj -A:test`. Thanks to `dev-local` these run
+against an in-memory Datomic Cloud database; you'll need to follow
+[setup instructions](https://docs.datomic.com/cloud/dev-local.html) to
+get the corresponding JAR.
