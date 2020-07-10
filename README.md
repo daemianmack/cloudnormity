@@ -3,15 +3,15 @@
 A re-do of [conformity](https://github.com/avescodes/conformity) to
 work with Datomic Cloud, with some small deviations.
 
-### Example
+### Example config
 
 A sample config lives under `test-resources`.
 
 ### Deviations from Conformity
 
 ##### Immutable norm default
-  Norms are considered immutable by default and will not be transacted
-  a second time unless explicitly marked `:mutable`.
+  Norms are considered immutable by default: they won't be transacted
+  on subsequent runs unless explicitly marked `:mutable`.
 
 ##### Single transaction per norm
   Conformity's data structure for describing norms allows for norms to
@@ -41,9 +41,9 @@ A sample config lives under `test-resources`.
   Conformity's data structure (see "Single transaction per norm")
   *also* accommodates handling especially-large tx data bodies as
   separate transactions, which is useful. Consider a means for
-  preserving this; perhaps treating `tx-fn` implementations specially,
-  since other types, being literal data structures, aren't likely to
-  get large enough.
+  preserving this capability; perhaps treating `tx-fn` implementations
+  specially, since other types, being literal data structures, aren't
+  likely to get large enough.
 
 ##### Need transactional update for norms
   Ensuring norms currently allows for a race wherein two clients could
